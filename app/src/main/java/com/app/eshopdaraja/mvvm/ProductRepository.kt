@@ -10,5 +10,4 @@ class ProductRepository @Inject constructor(private val apiService: ApiService) 
         return apiService.getProducts()
     }
 
-
 }
