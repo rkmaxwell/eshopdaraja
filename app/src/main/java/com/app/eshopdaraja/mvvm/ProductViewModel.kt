@@ -12,6 +12,7 @@ import com.app.eshopdaraja.mvvm.ProductRepository
 import com.app.composedemo.utlis.NetworkChangeReceiver.NetworkChangeReceiver.isNetworkConnected
 import com.app.composedemo.utlis.ViewState
 import com.app.eshopdaraja.model.ProductList
+import com.app.eshopdaraja.model.Products
 
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -83,5 +84,13 @@ class ProductViewModel @Inject constructor(
             }
         }
     }
+
+    fun getProductById(id: Int): Products? {
+        val currentState = products.value
+        return if (currentState is ViewState.Success) {
+            currentState.data.find { it.id == id }
+        } else null
+    }
+
 
 }

@@ -9,5 +9,4 @@ class ProductRepository @Inject constructor(private val apiService: ApiService) 
     suspend fun getProducts(): ProductList {
         return apiService.getProducts()
     }
-
 }

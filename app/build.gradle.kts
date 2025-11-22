@@ -6,9 +6,12 @@ plugins {
     id("dagger.hilt.android.plugin")
 }
 
+
+
 android {
     namespace = "com.app.eshopdaraja"
     compileSdk = 35
+
 
     defaultConfig {
         applicationId = "com.app.eshopdaraja"
@@ -50,9 +53,11 @@ android {
             excludes += "/META-INF/{AL2.0,LGPL2.1}"
         }
     }
+
 }
 
 dependencies {
+
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
@@ -71,10 +76,17 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
     implementation ("com.squareup.okhttp3:logging-interceptor:4.9.2")
+    implementation("androidx.navigation:navigation-compose:2.8.3")
+    implementation("androidx.hilt:hilt-navigation-compose:1.1.0")
 
+
+    //room
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    kapt(libs.room.compiler)
+    debugImplementation(libs.room.testing)
     // Coil
     implementation("io.coil-kt:coil-compose:2.5.0")
-
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)

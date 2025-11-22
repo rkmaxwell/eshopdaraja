@@ -1,12 +1,7 @@
 package com.app.eshopdaraja
 
 import android.app.Activity
-import android.os.Build
-import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -22,8 +17,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -35,32 +28,43 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.app.eshopdaraja.model.Products
-class ProductDetailScreen : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+import com.app.eshopdaraja.mvvm.CartViewModel
+import com.app.eshopdaraja.mvvm.ProductViewModel
 
-        setContent {
-            MaterialTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background
-                ) {
-                    val i = intent
-                    val productObject = intent.getParcelableExtra<Products>("productObject")
-                    ProductDetail(productObject)
-                }
-            }
-        }
+@Composable
+fun ProductDetailScreen (
+    productId:Int,
+    productViewModel: ProductViewModel = hiltViewModel(),
+    cartViewModel: CartViewModel = hiltViewModel(),
+    navController: NavController
+) {
+
+    val cartItems by cartViewModel.cartItems.collectAsState()
+    val product = productViewModel.getProductById(productId)
+
+    product?.let {
+        ProductDetail(it,cartViewModel,navController)
     }
 
+}
+
     @Composable
-    fun ProductDetail(products: Products?) {
+    fun ProductDetail(products: Products?, cartViewModel: CartViewModel,navController: NavController) {
         val context = LocalContext.current
         val act = LocalContext.current as Activity
+
+        val cartItems by cartViewModel.cartItems.collectAsState()
+
+        val cartItem = cartItems.find { it.productId == products!!.id }
+        var quantity by remember { mutableStateOf(cartItem?.quantity ?: 1) }
+
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -77,7 +81,7 @@ class ProductDetailScreen : ComponentActivity() {
             ) {
                 IconButton(
                     onClick = {
-                        act.finish()
+                        navController.popBackStack()
                     },
                     modifier = Modifier
                         .background(color = Color(0x8DE7E1E1), shape = CircleShape)
@@ -194,44 +198,64 @@ class ProductDetailScreen : ComponentActivity() {
                     contentAlignment = Alignment.Center
                 ) {
 
-                    Button(
-                        colors = ButtonDefaults.buttonColors(
-                            contentColor = Color.White
-                        ),
-                        modifier = Modifier
-                            .width(200.dp)
-                            .padding(top = 30.dp, bottom = 30.dp)
-                            .height(60.dp)
-                            .clip(RoundedCornerShape(15.dp)),
-                        onClick = {
-                            Toast.makeText(
-                                context, "Successfully added to cart", Toast.LENGTH_SHORT
-                            ).show()
 
-                        },
-                    ) {
-                        Text(text = "Add to Cart", fontSize = 16.sp)
+                    if(cartItem != null){
+
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(20.dp),
+                            horizontalArrangement = Arrangement.Center,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            IconButton(onClick = {
+                                if (quantity > 1) {
+                                    quantity--
+                                    cartViewModel.updateCart(
+                                        cartItem.copy(quantity = quantity)
+                                    )
+                                }
+                            }) {
+                                Icon(painterResource(id = R.drawable.minus), contentDescription = "Minus")
+                            }
+
+                            Text(
+                                quantity.toString(),
+                                fontSize = 20.sp,
+                                modifier = Modifier.padding(horizontal = 12.dp)
+                            )
+
+                            IconButton(onClick = {
+                                quantity++
+                                cartViewModel.updateCart(
+                                    cartItem.copy(quantity = quantity)
+                                )
+                            }) {
+                                Icon(painterResource(id = R.drawable.plus), contentDescription = "Plus")
+                            }
+                        }
+                    } else {
+
+                        Button(
+                            colors = ButtonDefaults.buttonColors(
+
+                                contentColor = Color.White
+                            ),
+                            modifier = Modifier
+                                .width(200.dp)
+                                .padding(top = 30.dp, bottom = 30.dp)
+                                .height(60.dp)
+                                .clip(RoundedCornerShape(15.dp)),
+                            onClick = {
+                                Toast.makeText(
+                                    context, "Successfully added to cart", Toast.LENGTH_SHORT
+                                ).show()
+
+                            },
+                        ) {
+                            Text(text = "Add to Cart", fontSize = 16.sp)
+                        }
                     }
-
-//                    Button(
-//                        colors = ButtonDefaults.buttonColors(
-//                            contentColor = Color.White,
-//                            containerColor =Color.DarkGray
-//                        ),
-//                        modifier = Modifier
-//                            .width(200.dp)
-//                            .padding(top = 30.dp, bottom = 30.dp)
-//                            .height(45.dp)
-//                            .clip(RoundedCornerShape(15.dp)),
-//                        onClick = {
-//                            Toast.makeText(
-//                                context, "Successfully added to cart", Toast.LENGTH_SHORT
-//                            ).show()
-//
-//                        },
-//                    ) {
-//                        Text(text = "Buy Now", fontSize = 16.sp)
-//                    }
 
 
             }
@@ -239,4 +263,3 @@ class ProductDetailScreen : ComponentActivity() {
             }
 
     }
-}
